@@ -30,7 +30,11 @@ afterAll(() => {
   for (const dir of temps) rmSync(dir, { recursive: true, force: true })
 })
 
-describe('read-review-verdict.sh', () => {
+// Each case starts real shells and git; on Windows (Git Bash) one spawn takes
+// about a second, so a case with several runs needs more than the 5 s default.
+const SPAWN_TIMEOUT = { timeout: 30_000 }
+
+describe('read-review-verdict.sh', SPAWN_TIMEOUT, () => {
   it('reads SHIP and NO-SHIP from the last line', () => {
     expect(verdict(transcript('All good.\n\nVERDICT: SHIP\n'))).toBe('SHIP')
     expect(verdict(transcript('One blocker.\nVERDICT: NO-SHIP\n\n'))).toBe('NO-SHIP')
@@ -56,7 +60,7 @@ for (const name of Object.keys(ENV)) {
 ENV.GIT_CONFIG_GLOBAL = '/dev/null'
 ENV.GIT_CONFIG_NOSYSTEM = '1'
 
-describe('.githooks/pre-push', () => {
+describe('.githooks/pre-push', SPAWN_TIMEOUT, () => {
   it('does not vouch for a commit while an untracked file sits beside it', () => {
     const dir = mkdtempSync(join(tmpdir(), 'pre-push-'))
     temps.push(dir)
