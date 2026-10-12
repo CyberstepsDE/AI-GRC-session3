@@ -63,7 +63,7 @@ their experience.
    the credentials cut out of the address (a remote URL can carry a token):
    `git remote get-url origin 2>/dev/null | sed -E 's#//[^/@]*@#//#'`.
    - No `origin`, or `origin` is the template's own repository
-     (CyberstepsDE/VibeEngineering): a **local project**, the default. Everything
+     (CyberstepsDE/VibeEngineering or CyberstepsDE/AI-GRC-session3): a **local project**, the default. Everything
      happens on this machine; there is nothing to push, no pull request and no
      server. The template's repository is not theirs to push to, and nothing
      needs pushing.
@@ -91,14 +91,13 @@ and 8.
 4. **Skills** are named routines they can call: `/start`, `/save`, `/grill-me`,
    `/cross-review`, `/diagnosing-bugs`, `/grill-with-docs`, `/codebase-design`
    and this one.
-5. **Any application, local first.** The template does not care what they build
-   or where it will run. The finished example lives on the template's `example`
-   branch; `docs/LAB.md` is one worked project that goes online with GitHub and
-   Vercel, an example rather than a requirement.
+5. **Compliance Guard, local first.** `README.md` says what this copy builds and
+   where its files are: the brief in `prompts.md`, the data in `standards/` and
+   `sample-company/`. The app runs on this laptop only.
 
 ## Station 2 - one-time setup
 
-Read `README.md` ("Requirements") and `docs/LAB.md` Stage 0. This is the one
+Read `README.md` ("Requirements"). This is the one
 station where the person acts outside the chat, and only to log in.
 
 1. **You check the tools** and report a table (tool, why it is needed, version or
@@ -212,8 +211,7 @@ Read `rules/secrets.md` and `rules/review-calibration.md`.
   are any), `WORK_LOG.md` (what each session did, written by `/save`).
 - A document is a second-class source; running code wins (`rules/facts-only.md`).
   When the agent finds a doc wrong, it fixes it in the same change.
-- `docs/DEPLOYMENT.md` the day they want the project online; `docs/LAB.md` for a
-  worked example; the template's `example` branch for a finished app.
+- `docs/DEPLOYMENT.md` the day they want the project online.
 
 ## Closing - report and hand-over
 
@@ -223,8 +221,8 @@ Read `rules/secrets.md` and `rules/review-calibration.md`.
      for a project on GitHub), and trusting the hooks in Codex with `/hooks`.
    - Optional, for a project on GitHub: the branch rule on `main` from Station 5.
    - Read `AGENTS.md` once, in full: it is what the agent holds itself to.
-   - A first project: their own idea, starting with `/grill-me`, or `docs/LAB.md`
-     as a worked example.
+   - The project: paste the brief the class agreed on (`prompts.md`) and answer
+     the agent's questions (`/grill-me`).
    - End every working session with `/save`.
 3. Invite questions: say plainly that anything about the template, the agent or
    the way of working can be asked now or in any later session, and that you are

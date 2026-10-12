@@ -12,12 +12,6 @@ Repeating a rule in a second file is a defect, not thoroughness. The two copies 
 agree today and disagree in a month, and nobody will notice until somebody is looking
 at the wrong answer on a screen.
 
-On this repository's `example` branch, `src/report-triage/transitions.ts` is a worked
-instance: it owns which verdict may follow which. The queue does not decide it. The
-user interface does not decide it. Both ask. Because the table is typed over every
-verdict, adding a verdict without adding it to the table is a compile error - the
-rule is enforced by the language, not by a comment asking nicely.
-
 Repeating how something LOOKS is fine. Two screens can render a list similarly
 without that being duplication. Repeating what something MEANS is the bug.
 
@@ -26,10 +20,9 @@ without that being duplication. Repeating what something MEANS is the bug.
 A module should be **easy to use and free to be complicated inside**. The measure is
 the ratio: how much does a caller have to learn, against how much they get.
 
-A good module hides a decision. On the `example` branch, `src/report-triage/` hides
-where reports are stored, what makes one valid, and which transitions are legal.
-Callers know four functions. Storage could move to a server tomorrow and nothing
-outside that folder would change.
+A good module hides a decision: where data is stored, what makes it valid, which
+changes are legal. Callers know a few functions, and storage could move to a server
+tomorrow without anything outside the module changing.
 
 A shallow module costs nearly as much to learn as it delivers - a wrapper that
 forwards one call, a helper that saves three characters, a layer that exists because
@@ -85,8 +78,7 @@ A comment restating the line below is noise that goes stale.
 
 A comment explaining a decision that is not visible - why this order, why not the
 obvious approach, what breaks if you change it - is the most valuable thing in the
-file. Every comment in the `example` branch's `src/report-triage/` is of that kind.
-Match that.
+file.
 
 ## H. Look at the whole flow before changing part of it
 
