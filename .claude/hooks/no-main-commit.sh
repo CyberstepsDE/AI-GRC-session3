@@ -30,7 +30,7 @@ input=$(cat)
 # Everything is judged from the session's directory. Without it (no jq, an
 # event without cwd, a payload that is not JSON) nothing can be judged honestly,
 # so the hook lets the commit through rather than judge its own directory.
-session_dir=$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null)
+session_dir=$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null | tr -d '\r')
 [ -n "$session_dir" ] && [ -d "$session_dir" ] || exit 0
 
 # Fast reject only - NOT the decision: "commit" somewhere after "git". Read-only
@@ -44,7 +44,7 @@ printf '%s' "$input" | grep -qE '\bgit\b[^;|&]*\bcommit\b' || exit 0
 # cwd, never the tool's description. jq unescapes the JSON string, so a quoted
 # path arrives as written. (The fast reject above only skips events with no
 # "git ... commit" anywhere in them; it never refuses anything.)
-command_line=$(printf '%s' "$input" | jq -r '.tool_input.command // empty' 2>/dev/null)
+command_line=$(printf '%s' "$input" | jq -r '.tool_input.command // empty' 2>/dev/null | tr -d '\r')
 [ -n "$command_line" ] || exit 0
 
 # Is "commit" the git SUBCOMMAND - the first token after "git" that does not

@@ -17,8 +17,11 @@ Version control is permanent. Deleting a secret in a later commit does not remov
 up. **A secret that has touched version control is burned and must be replaced**, no
 matter how quickly it was removed. There is no such thing as a small exposure.
 
-This repository has no secrets, on purpose. It is browser-only and talks to nothing.
-That is a design decision, not an accident, and it is why it can be public.
+This repository has no secrets, on purpose, and that is why it can be public. The
+one key the app needs, the OpenRouter key, lives in `.env`, which git ignores;
+`.env.example` shows its name without a value. Only the app's server side reads it,
+never code that runs in the browser: in Vite, a variable that starts with `VITE_`
+ends up in the browser code, so the key never gets that prefix.
 
 ## Where secrets live instead
 

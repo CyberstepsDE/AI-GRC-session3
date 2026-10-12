@@ -42,7 +42,7 @@ case "$author" in
   claude | codex | other) ;;
   *) echo "The author must be claude, codex or other (another agent or a person)." >&2; exit 1 ;;
 esac
-command -v jq >/dev/null 2>&1 || { echo "BLOCKED: jq is required (brew install jq, or apt install jq)." >&2; exit 1; }
+command -v jq >/dev/null 2>&1 || { echo "BLOCKED: jq is required (Windows: winget install --id jqlang.jq -e; macOS: brew install jq; Linux: apt install jq)." >&2; exit 1; }
 
 repo_root=$(git rev-parse --show-toplevel)
 cd "$repo_root"
@@ -52,8 +52,7 @@ base_sha=$(git rev-parse "$base_ref")
 head_sha=$(git rev-parse HEAD)
 git merge-base --is-ancestor "$base_sha" "$head_sha" || { echo "BLOCKED: $base_ref is not an ancestor of HEAD. Rebase first." >&2; exit 1; }
 
-common_dir=$(git rev-parse --git-common-dir)
-case "$common_dir" in /*) ;; *) common_dir="$repo_root/$common_dir" ;; esac
+common_dir=$(git rev-parse --path-format=absolute --git-common-dir)
 evidence="$common_dir/review-evidence/$head_sha"
 mkdir -p "$evidence"
 
@@ -83,12 +82,12 @@ run_pass() {
     set -- codex exec --ephemeral --sandbox read-only --json
     [ -n "${REVIEW_CODEX_MODEL:-}" ] && set -- "$@" --model "$REVIEW_CODEX_MODEL"
     run_with_deadline "$@" "$prompt" > "$out.raw" 2>/dev/null || return 1
-    jq -r 'select(.type == "item.completed" and .item.type == "agent_message") | .item.text' "$out.raw" > "$out"
+    jq -r 'select(.type == "item.completed" and .item.type == "agent_message") | .item.text' "$out.raw" | tr -d '\r' > "$out"
   else
     set -- claude -p --permission-mode plan --output-format json
     [ -n "${REVIEW_CLAUDE_MODEL:-}" ] && set -- "$@" --model "$REVIEW_CLAUDE_MODEL"
     run_with_deadline "$@" "$prompt" > "$out.raw" 2>/dev/null || return 1
-    jq -r '.result // empty' "$out.raw" > "$out"
+    jq -r '.result // empty' "$out.raw" | tr -d '\r' > "$out"
   fi
   rm -f "$out.raw"
   test -s "$out"

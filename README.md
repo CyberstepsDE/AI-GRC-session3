@@ -43,19 +43,27 @@ this repository.
 
 ## How to start
 
-1. Install what is listed under "Requirements" below and have your OpenRouter key
-   ready.
-2. Clone this repository:
-   ```bash
+1. Prepare your laptop once, before the lab: see "Requirements" below (on Windows,
+   the PowerShell commands under "Windows"). Have your OpenRouter key ready.
+2. Clone this repository and open Claude Code in it. On Windows, in PowerShell:
+   ```powershell
+   cd $HOME
    git clone https://github.com/CyberstepsDE/AI-GRC-session3.git compliance-guard
+   cd compliance-guard
+   claude
    ```
-3. Open the folder in Claude Code. The first time, type `/onboarding`; after that,
-   start every session with `/start`.
-4. Paste the brief the class agreed on, answer the agent's questions, approve its
-   plan and let it build in small steps. Work lands on a branch, gets two review
-   passes (`/cross-review`) and merges into `main`.
-5. Test on the sample company: run an interview, upload its answers, and check
-   every verdict and quote against the standards.
+   Clone it, do not download it as a ZIP: the way of working needs git. Keep it
+   outside OneDrive or other synced folders.
+3. The first time, type `/onboarding`. The agent checks your tools, sets up the
+   `.env` file for your OpenRouter key (you paste the key yourself, never into the
+   chat), runs the checks and starts the app once. After that, start every session
+   with `/start`.
+4. Paste the brief the class agreed on (`prompts.md`), answer the agent's
+   questions, approve its plan and let it build in small steps. Work lands on a
+   branch, gets two review passes (`/cross-review`) and merges into `main`.
+5. Test on the sample company: ask the agent to start the app (`npm run dev`) and
+   open http://127.0.0.1:4173 in your browser. Run an interview, upload the
+   company's answers, and check every verdict and quote against the standards.
 
 ## The way of working: the VibeEngineering template
 
@@ -120,7 +128,7 @@ Every tracked file of the template and the lab, and why it is there:
 │   ├── check-reviews.sh               - does this commit carry two SHIP verdicts
 │   └── read-review-verdict.sh         - reads one verdict, strictly
 ├── .github/
-│   ├── workflows/ci.yml               - CI: typecheck, lint, test, build, audit and a secret scan on every pull request
+│   ├── workflows/ci.yml               - CI: typecheck, lint, test, build, audit and a secret scan on every pull request, on Linux and on Windows
 │   └── pull_request_template.md       - what a pull request here must say
 ├── docs/
 │   └── DEPLOYMENT.md                  - for the agent: putting a project online, when the person wants it (any host)
@@ -137,6 +145,8 @@ Every tracked file of the template and the lab, and why it is there:
 ├── playwright.config.ts               - browser test setup
 ├── package.json, package-lock.json    - scripts and pinned dependencies
 ├── .nvmrc                             - the Node version, picked up by nvm automatically
+├── .env.example                       - the name of the one key the app needs (OPENROUTER_API_KEY), without a value
+├── .gitattributes                     - LF line endings on every machine, Windows included
 └── .gitignore                         - what never gets committed (.env files above all)
 ```
 
@@ -152,21 +162,48 @@ Three words worth defining once:
 
 ### Requirements
 
-- [Node.js](https://nodejs.org) 22.12 or newer. With `nvm`, run `nvm use` in this
-  folder and it picks the right version from `.nvmrc`.
-- An AI coding agent: [Claude Code](https://code.claude.com), Codex CLI, or
-  similar. The template is written for any of them. Having BOTH Claude Code and
-  Codex makes the review independent (one writes, the other reviews).
-- `jq`, used by the commit hook (and so by its tests in `npm run verify`) and by
-  the review script (`brew install jq`; preinstalled on recent macOS).
+- **Git, Node.js 22.12 or newer, and jq.** Git clones the repository and keeps its
+  history; Node.js runs the app and its checks (`.nvmrc`); jq is used by the commit
+  hook (and so by its tests in `npm run verify`) and by the review script.
+- **Claude Code** ([setup](https://code.claude.com/docs/en/setup)), with a Claude
+  plan that includes it. The template also works with Codex CLI.
+- Optional: **Codex CLI** as well. With both tools, one writes and the other
+  reviews; without Codex, both review passes run on Claude and are recorded as
+  `same-tool`. The lab does not need it.
 - Recommended: [gitleaks](https://github.com/gitleaks/gitleaks), so a secret is
-  caught on your machine before it is pushed (`brew install gitleaks`). Without it
-  the commit hook warns and CI still scans.
+  caught on your machine before it leaves it. Without it the commit hook warns and
+  CI still scans.
 - An [OpenRouter](https://openrouter.ai) API key for the app's assessment agent. It
-  goes in a local `.env` file, which git ignores, never in a committed file
-  (`rules/secrets.md`).
+  goes in a local `.env` file, copied from `.env.example`
+  (`OPENROUTER_API_KEY=...`), which git ignores; never in a committed file and
+  never under a `VITE_` name (`rules/secrets.md`).
 - Optional: a [GitHub](https://github.com) account, once you want the project on
   GitHub (pull requests and CI). A local project needs none.
+
+#### Windows
+
+Run these once in PowerShell. Windows may ask for administrator approval for
+Node.js; only you can give it. Skip what you already have (check with
+`git --version`, `node --version`, `jq --version`, `claude --version`).
+
+```powershell
+winget install --id Git.Git -e --source winget
+winget install --id OpenJS.NodeJS.LTS -e
+winget install --id jqlang.jq -e
+winget install --id Gitleaks.Gitleaks -e
+irm https://claude.ai/install.ps1 | iex
+```
+
+Then **close every terminal and open a new PowerShell**, so Windows finds the new
+tools. Git for Windows matters twice: Claude Code runs its commands and this
+template's hooks through its Git Bash. Use Node.js LTS from the installer above
+rather than a version manager.
+
+#### macOS
+
+`brew install node jq gitleaks` (git comes with the Xcode command line tools), and
+Claude Code from its [setup page](https://code.claude.com/docs/en/setup). With
+`nvm`, run `nvm use` in this folder and it picks the version from `.nvmrc`.
 
 ### The two review passes
 

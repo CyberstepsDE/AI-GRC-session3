@@ -53,7 +53,11 @@ a copy. Read a fact from its file when it matters instead of reciting this page.
 
 They already have this repository on their machine and you are running in it:
 never ask them to clone, download or copy it again, and do not quiz them about
-their experience.
+their experience. The one exception: when `git rev-parse --is-inside-work-tree`
+fails, the folder came as a ZIP download without git. Explain that branches,
+commits and the hooks need git, and walk them through the clone in `README.md`
+("How to start"); then they start Claude Code in the new folder and run
+`/onboarding` again.
 
 1. Explain the division of work in five lines: you run every command; they set up
    once, describe what they want, decide and look. Name the decisions that are
@@ -97,26 +101,58 @@ and 8.
 
 ## Station 2 - one-time setup
 
-Read `README.md` ("Requirements"). This is the one
-station where the person acts outside the chat, and only to log in.
+Read `README.md` ("Requirements", with its "Windows" and "macOS" parts). This is
+the station where the person acts outside the chat: to log in, and on Windows to
+install what is missing.
 
-1. **You check the tools** and report a table (tool, why it is needed, version or
-   "missing"): node (22.12 or newer, `.nvmrc`), npm, git, jq, claude, codex,
-   gitleaks (recommended), and gh only for a project on GitHub. You install what
-   is missing once they say yes, naming what you are about to install and from
-   where.
-2. **You run `/start`** as soon as node, npm, git and jq work (`npm run verify`
+1. **The shell.** Every command of this template runs in a POSIX shell: on macOS
+   the normal terminal, on Windows Git Bash, which Claude Code uses for its Bash
+   tool. Check with `uname -s` (on Windows it starts with `MINGW` or `MSYS`) and
+   `echo "$BASH_VERSION"`. If you have no Bash tool on Windows, Git for Windows is
+   missing or not found: the person installs it (README, "Windows") or sets
+   `CLAUDE_CODE_GIT_BASH_PATH` to its `bash.exe`, then restarts Claude Code. Stop
+   here until the shell works.
+2. **You check the tools** and report a table (tool, why it is needed, version or
+   "missing"): node (22.12 or newer, `.nvmrc`), npm, git, jq, claude, gitleaks
+   (recommended), codex (optional), and gh only for a project on GitHub. Also
+   show `git config --get core.autocrlf`; `.gitattributes` keeps every file LF
+   whatever it says.
+   - **macOS**: you install what is missing with `brew` once they say yes,
+     naming what you are about to install and from where.
+   - **Windows**: they install what is missing themselves, in PowerShell, with
+     the `winget` lines from README "Windows": an installer may ask for
+     administrator approval, which only they can give. A running Claude Code does
+     not see newly installed tools, so afterwards they type `/exit`, open a new
+     PowerShell, `cd` into this folder, start `claude`, run `/onboarding` and name
+     Station 2.
+3. **You run `/start`** as soon as node, npm, git and jq work (`npm run verify`
    tests the commit hook, which needs jq); the other tools are not needed for
    it. It runs `npm ci` (the toolchain, and the git hooks in `.githooks/`
    switched on), then `npm run verify`, and reports what it found. Explain the
    point: `/start` is how every session begins, and `/save` is how it ends.
-3. **The person logs in once per tool**, typing their own credentials into the
-   tool's prompt: Codex (`codex login`), Claude Code, and GitHub
-   (`gh auth login`) only for a project on GitHub.
-   You verify each login with a read-only call and say what you see. Having BOTH
-   Claude Code and Codex makes the reviews independent.
-4. **Codex runs this project's hooks only once they are trusted**: they open Codex
-   in the folder and approve the hooks with `/hooks` (again after a hook changes).
+4. **The OpenRouter key.** If `.env` does not exist, copy `.env.example` to `.env`
+   and show that git ignores it (`git check-ignore -v .env` names `.gitignore`).
+   Open it for them (`notepad.exe .env` on Windows, `open -e .env` on macOS):
+   they paste the key after `=` and save. Never print the file. Check that a
+   value is there with `grep -cE '^OPENROUTER_API_KEY=.+' .env` (prints 1), and
+   that OpenRouter accepts it without showing it:
+   `curl -s -o /dev/null -w '%{http_code}\n' -H "Authorization: Bearer $(sed -n 's/^OPENROUTER_API_KEY=//p' .env | tr -d '\r')" https://openrouter.ai/api/v1/key`
+   prints 200.
+5. **The browser for the tests**: `npx playwright install chromium`, then
+   `npm run test:e2e` once, so the browser checks also work on this laptop.
+6. **The app runs here.** Start `npm run dev` in the background, check that
+   http://127.0.0.1:4173 answers (`curl -s -o /dev/null -w '%{http_code}\n'
+   http://127.0.0.1:4173` prints 200) and ask them to open that address in their
+   browser. Today it shows the placeholder page; after the build, Compliance
+   Guard. Then stop the server.
+7. **The person logs in once per tool**, typing their own credentials into the
+   tool's prompt: Claude Code, Codex (`codex login`) only if they use it, and
+   GitHub (`gh auth login`) only for a project on GitHub. You verify each login
+   with a read-only call and say what you see. Codex is optional: with it the
+   reviews are independent; without it both passes run on Claude (`same-tool`).
+8. **Codex runs this project's hooks only once they are trusted**: if they use
+   Codex, they open it in the folder and approve the hooks with `/hooks` (again
+   after a hook changes).
 
 **Live example**: show `git config core.hooksPath` (it should say `.githooks`) and
 explain in one line each what `pre-commit` and `pre-push` will do for them
@@ -173,7 +209,8 @@ agent does" and "you see or decide":
    branch into `main` on this machine, and that is the end of the road. A project
    on GitHub: the agent pushes (the push hook runs `npm run verify` again and
    warns when the commit has no two-SHIP review) and opens a pull request; CI
-   runs three checks (`verify`, `secrets`, `browser`); the merge waits for green.
+   runs four checks (`verify`, `windows`, `secrets`, `browser`); the merge waits
+   for green.
 7. Later, only if they want it: moving a local project to GitHub (the agent
    creates their repository and points `origin` at it; nothing is cloned again),
    or putting it online. Online follows `docs/DEPLOYMENT.md`: they choose the
@@ -201,7 +238,7 @@ Read `rules/secrets.md` and `rules/review-calibration.md`.
    agent never becomes an instruction.
 4. **Only for a project on GitHub**: they can make the checks binding: Settings ->
    Branches -> a rule for `main` that requires a pull request and the `verify`,
-   `secrets` and `browser` checks. Offer to do it with `gh` if they want; it is
+   `windows`, `secrets` and `browser` checks. Offer to do it with `gh` if they want; it is
    their repository and their decision.
 
 ## Station 6 - where knowledge lives
@@ -217,8 +254,9 @@ Read `rules/secrets.md` and `rules/review-calibration.md`.
 
 1. Summarise per station: done, or blocked (what is missing).
 2. Give them this hand-over list, marking what is already done:
-   - Any login or tool still missing (Claude Code, Codex, gitleaks; GitHub only
-     for a project on GitHub), and trusting the hooks in Codex with `/hooks`.
+   - Any login or tool still missing (Claude Code, gitleaks; Codex only if they
+     use it, and then trusting its hooks with `/hooks`; GitHub only for a project
+     on GitHub), and the OpenRouter key in `.env` if it is not there yet.
    - Optional, for a project on GitHub: the branch rule on `main` from Station 5.
    - Read `AGENTS.md` once, in full: it is what the agent holds itself to.
    - The project: paste the brief the class agreed on (`prompts.md`) and answer

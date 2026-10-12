@@ -71,7 +71,11 @@ afterAll(() => {
   for (const dir of temps) rmSync(dir, { recursive: true, force: true })
 })
 
-describe('no-main-commit hook', () => {
+// Each case starts real shells and git; on Windows (Git Bash) one spawn takes
+// about a second, so a case with several runs needs more than the 5 s default.
+const SPAWN_TIMEOUT = { timeout: 30_000 }
+
+describe('no-main-commit hook', SPAWN_TIMEOUT, () => {
   describe('target repository on main', () => {
     it('blocks `cd <dir> && git commit`', () => {
       const dir = repoOnBranch('main')

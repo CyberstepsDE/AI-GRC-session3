@@ -5,7 +5,8 @@
 # Scans the staged changes for secrets with gitleaks. When gitleaks is not
 # installed it WARNS and lets the commit through, so a newcomer is never stuck
 # before their first commit; the CI secret scan still runs on every pull
-# request. Install it once (brew install gitleaks) to catch a key before it
+# request. Install it once (Windows: winget install --id Gitleaks.Gitleaks -e;
+# macOS: brew install gitleaks) to catch a key before it
 # leaves your machine - after a push it is burned and must be replaced.
 
 if command -v gitleaks >/dev/null 2>&1; then
@@ -15,5 +16,5 @@ if command -v gitleaks >/dev/null 2>&1; then
     exit 1
   }
 else
-  echo "warning: gitleaks is not installed, so this commit was not scanned for secrets locally (CI still scans). Install: brew install gitleaks" >&2
+  echo "warning: gitleaks is not installed, so this commit was not scanned for secrets locally (CI still scans). Install: winget install --id Gitleaks.Gitleaks -e (Windows) or brew install gitleaks (macOS)" >&2
 fi
