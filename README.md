@@ -1,17 +1,73 @@
-# Cybersteps Training Starter
+# Compliance Guard: AI for Cybersecurity, session 3 (GRC)
 
-A template for a **way of working with an AI coding agent**. It is not an
-application - there is no product code here yet, and that is the point. What is
-checked in is everything that stays true no matter what you build: the rules the
-agent reads, the review agents that check its work, the commands that verify every
-change, and the automation that runs those commands for you.
+## What we build
 
-You bring the idea. The agent asks you questions about it, writes a short plan,
-and builds it inside this structure, one verified step at a time.
+Compliance Guard is a web app on the auditor's laptop. It helps an auditor check
+whether a company meets ISO/IEC 27001:2022 and the German BSI Act (BSIG), the law
+that implements NIS2 in Germany, or how ready it is. The NIS2 Directive stays the
+common EU reference.
 
-## What is inside
+- **Standards library**: every reference in the app (for example A.8.13 or
+  § 30(2) Nr. 3 BSIG) opens its exact text.
+- **Two ways to collect answers**: a live interview, department by department, or
+  a questionnaire exported as a PDF and uploaded back with the company's answers.
+- **Assessment agent**: a cloud model reached through OpenRouter and configured
+  like an experienced auditor. For every requirement it proposes a status
+  (conformity, minor nonconformity, major nonconformity or open), quotes the
+  evidence with where it was found, and suggests follow-up questions.
+- **Interactive report**: the auditor filters, adds notes, asks for a new
+  assessment, confirms or changes every verdict and exports the report.
 
-Every tracked file, and why it is there:
+The app prepares, the agent proposes, the auditor decides. You build it in the lab
+with an AI coding agent, from the brief in `prompts.md`.
+
+## Where the files are
+
+| File | What it is | How the project uses it |
+| --- | --- | --- |
+| `prompts.md` | The brief (main prompt) and the prompts in reserve | You paste the brief the class agreed on into the agent; the reserve prompts come after the first working version |
+| `agent/assessor.md` | The instructions of the app's assessment agent | The app sends them with every assessment request |
+| `standards/ISO-IEC-27001-2022.md` | ISO/IEC 27001:2022 with Amendment 1:2024: clauses 4 to 10 and Annex A | Standards library |
+| `standards/ISO-IEC-27002-2022.md` | ISO/IEC 27002:2022: guidance for each of the 93 controls | Standards library |
+| `standards/BSIG-2025.md` | The German BSI Act (BSIG), in German | Standards library: the binding law |
+| `standards/NIS2-Directive-2022-2555.md` | Directive (EU) 2022/2555 (NIS2) | Standards library: the EU reference |
+| `standards/NIS2-Implementing-Regulation-2024-2690.md` | Implementing Regulation (EU) 2024/2690: detailed rules for digital providers such as managed service providers | Standards library, where the company type is in its scope |
+| `sample-company/company-profile.md` | The made-up company Beispiel IT-Services GmbH, a managed IT service provider | The scenario: context for the assessment |
+| `sample-company/questionnaire.md` | 24 audit questions, each with what an auditor asks to see and its references | Seeds the question catalogue |
+| `sample-company/questionnaire-answers.md` | The same questions, answered by the company's head of IT | What the app assesses in the test |
+| `sample-company/manifest.json` | Marks the case as made-up | Only cases marked as made-up go to the cloud |
+| `sample-company/README.md` | More about the sample company and its sources | Background |
+
+Everything in `sample-company/` is invented. Never put a real company's documents in
+this repository.
+
+## How to start
+
+1. Install what is listed under "Requirements" below and have your OpenRouter key
+   ready.
+2. Clone this repository:
+   ```bash
+   git clone https://github.com/CyberstepsDE/AI-GRC-session3.git compliance-guard
+   ```
+3. Open the folder in Claude Code. The first time, type `/onboarding`; after that,
+   start every session with `/start`.
+4. Paste the brief the class agreed on, answer the agent's questions, approve its
+   plan and let it build in small steps. Work lands on a branch, gets two review
+   passes (`/cross-review`) and merges into `main`.
+5. Test on the sample company: run an interview, upload its answers, and check
+   every verdict and quote against the standards.
+
+## The way of working: the VibeEngineering template
+
+This repository is a copy of the VibeEngineering template, a **way of working with
+an AI coding agent**. Besides the lab files, what is checked in stays true no matter
+what you build: the rules the agent reads, the review agents that check its work, the
+commands that verify every change, and the automation that runs those commands for
+you. `src/` and `tests/` hold placeholders that the app replaces.
+
+### What is inside
+
+Every tracked file of the template and the lab, and why it is there:
 
 ```text
 .
@@ -19,6 +75,10 @@ Every tracked file, and why it is there:
 ├── CLAUDE.md                          - a stub that points Claude Code at AGENTS.md
 ├── README.md                          - this file
 ├── LICENSE                            - MIT
+├── prompts.md                         - the brief and the prompts in reserve for the lab
+├── agent/assessor.md                  - the instructions of the app's assessment agent
+├── standards/                         - ISO/IEC 27001 and 27002, BSIG, NIS2, Regulation 2024/2690 as Markdown
+├── sample-company/                    - the made-up company the app is tested on
 ├── rules/                             - the detail behind AGENTS.md, one topic per file
 │   ├── less-is-more.md                - gate 1: not a single unnecessary character
 │   ├── facts-only.md                  - gate 2: no claim without a citation
@@ -63,8 +123,7 @@ Every tracked file, and why it is there:
 │   ├── workflows/ci.yml               - CI: typecheck, lint, test, build, audit and a secret scan on every pull request
 │   └── pull_request_template.md       - what a pull request here must say
 ├── docs/
-│   ├── DEPLOYMENT.md                  - for the agent: putting a project online, when the person wants it (any host)
-│   └── LAB.md                         - a worked example: one app built stage by stage, taken online with Vercel
+│   └── DEPLOYMENT.md                  - for the agent: putting a project online, when the person wants it (any host)
 ├── src/                               - the application (today: a one-page placeholder to delete)
 │   ├── main.tsx
 │   ├── ui/App.tsx
@@ -91,7 +150,7 @@ Three words worth defining once:
   on every pull request, so nobody has to remember to run them by hand. It runs
   only once the project is on GitHub; a local project has none.
 
-## Requirements
+### Requirements
 
 - [Node.js](https://nodejs.org) 22.12 or newer. With `nvm`, run `nvm use` in this
   folder and it picks the right version from `.nvmrc`.
@@ -103,42 +162,13 @@ Three words worth defining once:
 - Recommended: [gitleaks](https://github.com/gitleaks/gitleaks), so a secret is
   caught on your machine before it is pushed (`brew install gitleaks`). Without it
   the commit hook warns and CI still scans.
+- An [OpenRouter](https://openrouter.ai) API key for the app's assessment agent. It
+  goes in a local `.env` file, which git ignores, never in a committed file
+  (`rules/secrets.md`).
 - Optional: a [GitHub](https://github.com) account, once you want the project on
   GitHub (pull requests and CI). A local project needs none.
 
-## How to use it, step by step
-
-1. **Get a copy onto your machine** with git, one folder per project:
-   ```bash
-   git clone https://github.com/CyberstepsDE/VibeEngineering.git my-project
-   ```
-   That is all a local project needs. If you want the project on GitHub from
-   the start, press "Use this template" -> "Create a new repository" instead and
-   clone your new repository; later works too, the agent can connect it for you.
-2. **Open the folder in your AI coding agent.** The project's dependencies are
-   installed by the agent, not typed by you.
-3. **Type `/onboarding` the first time** - the agent walks you through the setup
-   and the way of working, one step at a time. After that, **start every session
-   with `/start`.** It installs the dependencies (`npm ci`, which also switches on
-   the git hooks in `.githooks/`), reads `AGENTS.md`, checks that the project
-   still runs, and reports what it found instead of guessing.
-4. **Work.** Tell the agent in your own words what you want to build. It will
-   interview you before writing code (`/grill-me` forces this when it does not
-   happen on its own). Work lands on a branch, gets reviewed (next section), and
-   merges into `main`: on your machine for a local project, through a pull
-   request once the project is on GitHub.
-5. **Online, only when you want it.** A local project needs no server and no
-   staging. When you decide to put it online, the agent follows
-   `docs/DEPLOYMENT.md`: you choose the host, and a project people rely on gets
-   a staging environment before production.
-
-For the next idea, start again from a fresh copy - every project gets its own
-folder and history. The rules, agents and checks come with it; `src/` and
-`tests/` are placeholders you replace. `docs/LAB.md` is one worked example that
-builds an app stage by stage and takes it online with GitHub and Vercel; your
-own project needs neither.
-
-## The two review passes
+### The two review passes
 
 Nothing merges here on the word of the mind that wrote it. Before a change
 merges, it gets **two review passes**, each by a reviewer that did not write
@@ -179,7 +209,7 @@ nothing: `researcher.md` checks a fact against the live source before it gets
 written down, and `ux-reviewer.md` walks a UI change as a person seeing the
 screen for the first time.
 
-## What is enforced, and what is convention
+### What is enforced, and what is convention
 
 An instruction file is context, not a mechanism - an agent can drift past it.
 Honesty about which rules have teeth:
@@ -196,18 +226,6 @@ Honesty about which rules have teeth:
 | Think before changing anything | A short reminder on every message, in Claude Code (`settings.json`) and Codex (`.codex/hooks.json`) | **Reminds only.** Codex runs it after you trust the project's hooks once with `/hooks`. |
 | No force push | `.claude/settings.json` denies `git push --force ...` | **Blocks in Claude Code**, for that spelling only. `--force-with-lease` (your own branch, after a rebase) stays allowed. |
 | Everything else in `AGENTS.md` and `rules/` | The agent reading it | **Convention.** It binds by being read, which is why `AGENTS.md` is short. |
-
-## The finished example
-
-The `example` branch was never stripped down. It holds a small, complete
-application - a phishing-report triage queue - built through this exact workflow
-from start to finish. Look there to see what a finished change, reviewed and
-passing every check, actually looks like:
-
-```bash
-git switch example
-npm run verify
-```
 
 ## License
 

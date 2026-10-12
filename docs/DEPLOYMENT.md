@@ -62,8 +62,7 @@ project kind (`AGENTS.md` section 3):
   `vercel git connect` here: it takes the repository from the local git config,
   which would be the template's.
 - **Project on GitHub**: `npx vercel git connect` connects their own repository,
-  and from then on every push builds. `docs/LAB.md` Stage 0, Steps 3 and 4 walk
-  through this on a worked example.
+  and from then on every push builds.
 
 ## Other hosts
 
