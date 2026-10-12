@@ -9,6 +9,22 @@ change, and the automation that runs those commands for you.
 You bring the idea. The agent asks you questions about it, writes a short plan,
 and builds it inside this structure, one verified step at a time.
 
+## This copy: AI for Cybersecurity, session 3 (GRC)
+
+This repository is the VibeEngineering template plus the data for the Compliance
+Guard lab, so the agent has everything it needs to build the app:
+
+- `prompts.md` - the brief for the building agent and the prompts in reserve
+- `agent/assessor.md` - the instructions of the app's assessment agent
+- `standards/` - ISO/IEC 27001:2022, ISO/IEC 27002:2022, the BSI Act (BSIG), the
+  NIS2 Directive and Implementing Regulation (EU) 2024/2690 as Markdown
+- `sample-company/` - the made-up company Beispiel IT-Services GmbH: profile,
+  questionnaire, answers, and `manifest.json`, which marks it as made-up
+
+Get your copy with
+`git clone https://github.com/CyberstepsDE/AI-GRC-session3.git compliance-guard`,
+then continue with step 2 below.
+
 ## What is inside
 
 Every tracked file, and why it is there:
