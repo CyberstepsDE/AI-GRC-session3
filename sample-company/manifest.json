@@ -1,0 +1,14 @@
+{
+  "cases": [
+    {
+      "id": "beispiel-it-services",
+      "company": "Beispiel IT-Services GmbH",
+      "madeUp": true,
+      "files": [
+        "company-profile.md",
+        "questionnaire.md",
+        "questionnaire-answers.md"
+      ]
+    }
+  ]
+}
