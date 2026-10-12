@@ -26,6 +26,24 @@ jobs:
       - run: npm run verify
       - run: npm audit --audit-level=high
 
+  windows:
+    # The lab laptops run Windows: the same checks, through Git Bash, with the
+    # Windows builds of Node and jq.
+    runs-on: windows-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: jq --version && file "$(command -v jq)" || true
+      - run: npm ci
+      - run: npm run verify
+
   secrets:
     runs-on: ubuntu-latest
     timeout-minutes: 5

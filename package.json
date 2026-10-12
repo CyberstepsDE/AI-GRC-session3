@@ -12,7 +12,7 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b --pretty false",
     "lint": "eslint . --max-warnings 0",
-    "test": "vitest run --exclude '**/*.browser.test.ts'",
+    "test": "vitest run --exclude \"**/*.browser.test.ts\"",
     "test:e2e": "playwright test",
     "verify": "npm run typecheck && npm run lint && npm run test && npm run build"
   },

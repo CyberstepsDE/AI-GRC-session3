@@ -10,8 +10,7 @@
 set -u
 
 sha=${1:?Usage: check-reviews.sh <sha>}
-common_dir=$(git rev-parse --git-common-dir)
-case "$common_dir" in /*) ;; *) common_dir="$(git rev-parse --show-toplevel)/$common_dir" ;; esac
+common_dir=$(git rev-parse --path-format=absolute --git-common-dir)
 manifest="$common_dir/review-evidence/$sha/manifest.json"
 
 if [ ! -f "$manifest" ]; then
@@ -20,9 +19,9 @@ if [ ! -f "$manifest" ]; then
 fi
 command -v jq >/dev/null 2>&1 || { echo "NOT CHECKED: jq is missing, cannot read $manifest."; exit 1; }
 
-logic=$(jq -r '.logic_verdict' "$manifest")
-security=$(jq -r '.security_verdict' "$manifest")
-independence=$(jq -r '.independence' "$manifest")
+logic=$(jq -r '.logic_verdict' "$manifest" | tr -d '\r')
+security=$(jq -r '.security_verdict' "$manifest" | tr -d '\r')
+independence=$(jq -r '.independence' "$manifest" | tr -d '\r')
 if [ "$logic" = SHIP ] && [ "$security" = SHIP ]; then
   echo "reviewed: logic SHIP, security SHIP ($independence) for $sha"
   exit 0

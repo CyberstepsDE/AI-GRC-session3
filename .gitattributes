@@ -1,0 +1,4 @@
+# Every text file keeps LF line endings on every machine, Windows included:
+# the shell scripts and hooks need it, and the app quotes the standards and the
+# sample company by position, which must not depend on the laptop.
+* text=auto eol=lf
