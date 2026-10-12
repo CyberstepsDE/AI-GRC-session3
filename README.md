@@ -26,7 +26,7 @@ with an AI coding agent, from the brief in `prompts.md`.
 | File | What it is | How the project uses it |
 | --- | --- | --- |
 | `prompts.md` | The brief (main prompt) and the prompts in reserve | You paste the brief the class agreed on into the agent; the reserve prompts come after the first working version |
-| `agent/assessor.md` | The instructions of the app's assessment agent | The app sends them with every assessment request |
+| `agent/assessor.md` | The instructions of the app's assessment agent: our answers to how answers are assessed | The app sends them with every assessment request; when the agent asks how to assess (`/grill-me`), point it here |
 | `standards/ISO-IEC-27001-2022.md` | ISO/IEC 27001:2022 with Amendment 1:2024: clauses 4 to 10 and Annex A | Standards library |
 | `standards/ISO-IEC-27002-2022.md` | ISO/IEC 27002:2022: guidance for each of the 93 controls | Standards library |
 | `standards/BSIG-2025.md` | The German BSI Act (BSIG), in German | Standards library: the binding law |
