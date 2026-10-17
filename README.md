@@ -118,7 +118,7 @@ Every tracked file of the template and the lab, and why it is there:
 │       ├── improve-codebase-architecture/ - find modules worth deepening
 │       ├── diagnosing-bugs/           - a reproducible failing loop before any theory, then the fix, with a regression test where one can reach the bug
 │       └── THIRD_PARTY.md             - the six skills above come from mattpocock/skills (MIT)
-├── .agents                            - a symlink to .claude, so other agent tools find the same config
+├── .agents                            - a symlink to .claude, so other agent tools find the same config (on Windows, see "Windows")
 ├── .codex/hooks.json                  - the same critical-thinking reminder for Codex (trust it once with /hooks)
 ├── .githooks/                         - git hooks for every tool and person, enabled by npm ci in a git checkout
 │   ├── pre-commit                     - scans staged changes for secrets (when gitleaks is installed)
@@ -198,6 +198,11 @@ Then **close every terminal and open a new PowerShell**, so Windows finds the ne
 tools. Git for Windows matters twice: Claude Code runs its commands and this
 template's hooks through its Git Bash. Use Node.js LTS from the installer above
 rather than a version manager.
+
+Only if you use Codex: Git for Windows checks a symlink out as a small text file
+unless symlinks are switched on, so `.agents` is not a folder there and Codex
+does not find the skills (start, save and the others). Claude Code reads
+`.claude` directly and is not affected, and Codex reviews need no skills.
 
 #### macOS
 
