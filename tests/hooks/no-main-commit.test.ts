@@ -1,12 +1,12 @@
-// Fixtures for the PreToolUse[Bash] guard in .claude/hooks/no-main-commit.sh.
+// Fixtures for the PreToolUse[Bash|PowerShell] guard in .claude/hooks/no-main-commit.sh.
 //
 // A static guard must enumerate every syntactic form of the operation it
 // restricts, proven by positive AND negative fixtures, not by reading the
 // script. Each case builds a throwaway git repository, so the result never
 // depends on the branch this suite happens to run from.
 
-import { execFileSync } from 'node:child_process'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { execFileSync, spawnSync } from 'node:child_process'
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -65,6 +65,17 @@ function runHook(
   } catch (err) {
     return (err as { status?: number }).status ?? 1
   }
+}
+
+/**
+ * The spellings of one directory that can reach the hook on Windows: C:\x
+ * (PowerShell, and the event's cwd), C:/x (what git prints) and /c/x (Git
+ * Bash). On macOS and Linux there is only the one POSIX path.
+ */
+function spellings(dir: string): string[] {
+  if (process.platform !== 'win32') return [dir]
+  const slashed = dir.replace(/\\/g, '/')
+  return [dir, slashed, `/${slashed[0].toLowerCase()}${slashed.slice(2)}`]
 }
 
 afterAll(() => {
@@ -182,6 +193,46 @@ describe('no-main-commit hook', SPAWN_TIMEOUT, () => {
     })
   })
 
+  describe('reads Windows paths and PowerShell commands', () => {
+    it('blocks every spelling of a Windows path, with -C and with cd', () => {
+      const dir = repoOnBranch('main')
+      const session = repoOnBranch('feat/elsewhere')
+      for (const path of spellings(dir)) {
+        expect(runHook(`git -C "${path}" commit -m x`, session)).toBe(2)
+        expect(runHook(`cd "${path}" && git commit -m x`, session)).toBe(2)
+      }
+    })
+
+    it("reads the session's directory in every spelling", () => {
+      const session = repoOnBranch('main')
+      const elsewhere = repoOnBranch('feat/elsewhere')
+      for (const path of spellings(session)) {
+        expect(runHook('git commit -m x', elsewhere, path)).toBe(2)
+      }
+    })
+
+    it('blocks a commit after each PowerShell way to change the directory', () => {
+      const dir = repoOnBranch('main')
+      const session = repoOnBranch('feat/elsewhere')
+      expect(runHook(`Set-Location ${dir}; git commit -m x`, session)).toBe(2)
+      expect(runHook(`Set-Location -Path '${dir}'; git commit -m x`, session)).toBe(2)
+      expect(runHook(`set-location -LiteralPath "${dir}"; git commit -m x`, session)).toBe(2)
+      expect(runHook(`sl ${dir}; git commit -m x`, session)).toBe(2)
+      expect(runHook(`Push-Location ${dir}; git commit -m x; Pop-Location`, session)).toBe(2)
+    })
+
+    it('judges the directory PowerShell moved to, not the session', () => {
+      const feature = repoOnBranch('feat/some-scope')
+      const session = repoOnBranch('main')
+      expect(runHook(`Set-Location -Path '${feature}'; git commit -m x`, session)).toBe(0)
+    })
+
+    it('lets the commit through when PowerShell names the directory with a variable', () => {
+      const session = repoOnBranch('main')
+      expect(runHook('Set-Location $env:USERPROFILE\\repo; git commit -m x', session)).toBe(0)
+    })
+  })
+
   describe('does not refuse legitimate work', () => {
     it('allows a commit on a feature branch', () => {
       expect(runHook('git commit -m x', repoOnBranch('feat/some-scope'))).toBe(0)
@@ -215,6 +266,30 @@ describe('no-main-commit hook', SPAWN_TIMEOUT, () => {
         code = (err as { status?: number }).status ?? 1
       }
       expect(code).toBe(0)
+    })
+  })
+
+  describe('as .claude/settings.json runs it', () => {
+    const settings = JSON.parse(readFileSync(join(process.cwd(), '.claude/settings.json'), 'utf8'))
+    const entry: { matcher: string; hooks: { command: string; onFailure?: string }[] } =
+      settings.hooks.PreToolUse[0]
+
+    it('sees both shell tools, and a hook that cannot run does not stop the call', () => {
+      expect(entry.matcher.split('|').sort()).toEqual(['Bash', 'PowerShell'])
+      expect(entry.hooks[0].onFailure).toBe('continue')
+    })
+
+    it("runs from the configured command, with the project folder in this system's form", () => {
+      // Claude Code runs it with sh -c on macOS and Linux and with Git Bash on Windows.
+      const shell = process.platform === 'win32' ? 'bash' : 'sh'
+      const run = (session: string) =>
+        spawnSync(shell, ['-c', entry.hooks[0].command], {
+          input: JSON.stringify({ tool_name: 'PowerShell', cwd: session, tool_input: { command: 'git commit -m x' } }),
+          env: { ...ENV, CLAUDE_PROJECT_DIR: process.cwd() },
+          encoding: 'utf8',
+        }).status
+      expect(run(repoOnBranch('main'))).toBe(2)
+      expect(run(repoOnBranch('feat/some-scope'))).toBe(0)
     })
   })
 })

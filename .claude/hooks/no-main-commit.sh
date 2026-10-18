@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
-# PreToolUse[Bash] guard: never commit on the main branch.
+# PreToolUse[Bash|PowerShell] guard: never commit on the main branch.
+#
+# Both shell tools: on Windows, wherever Claude Code's PowerShell tool is on,
+# Claude routes shell commands through it, and a hook that matches only Bash
+# never sees them (code.claude.com/docs/en/hooks, "PowerShell"). The hook itself
+# always runs in bash (Git Bash on Windows); it reads a PowerShell command with
+# the same rules, plus PowerShell's own ways of changing the directory.
 #
 # AGENTS.md section 3 is explicit - work happens on a short-lived branch, never
 # straight on main. This hook is the code that makes that a rule instead of a
@@ -9,7 +15,8 @@
 #
 # WHICH REPOSITORY A COMMIT TARGETS. A guard must enumerate every syntactic form
 # of the operation it restricts: `cd <dir> && git commit`, `git -C <dir> commit`,
-# `git --git-dir=<dir>/.git --work-tree=<dir> commit` and a bare `git commit`.
+# `git --git-dir=<dir>/.git --work-tree=<dir> commit` and a bare `git commit`;
+# in PowerShell also `Set-Location <dir>; git commit` and its aliases.
 # Only the commit's own invocation and a `cd` before it choose the repository
 # (`git -C <other> status && git commit` judges the commit, not the status), and
 # git itself resolves those options. Everything is judged from the SESSION's
@@ -20,7 +27,11 @@
 # EXIT CODES MATTER: in Claude Code hooks, ONLY exit 2 blocks the action.
 # Exit 1 is a non-blocking error and the action proceeds. Fails OPEN by design:
 # an unparseable payload, or a directory the hook cannot resolve (a shell
-# variable such as "$DIR"), must never become an unexplained refusal.
+# variable such as "$DIR"), must never become an unexplained refusal. On Windows
+# without Git Bash this script cannot run at all, and Claude Code would then
+# block every shell command; `"onFailure": "continue"` in settings.json keeps
+# that failure open as well (code.claude.com/docs/en/hooks, "Failed hooks on
+# Windows without Git Bash").
 # Fixtures: tests/hooks/no-main-commit.test.ts.
 
 set -uo pipefail
@@ -92,6 +103,25 @@ opaque() {
   return 1
 }
 
+# Words that change the directory: cd and pushd in both shells, and PowerShell's
+# Set-Location (also sl and chdir) and Push-Location. PowerShell ignores case.
+changes_dir() {
+  local r=1
+  shopt -s nocasematch
+  case "$1" in cd | pushd | sl | chdir | set-location | push-location) r=0 ;; esac
+  shopt -u nocasematch
+  return "$r"
+}
+
+# PowerShell may name the path: `Set-Location -Path <dir>` or `-LiteralPath`.
+names_path() {
+  local r=1
+  shopt -s nocasematch
+  case "$1" in -path | -literalpath) r=0 ;; esac
+  shopt -u nocasematch
+  return "$r"
+}
+
 # Walk the invocations (`cd x && git commit` is two). Remember the last `cd`
 # before the commit; read the repository options ONLY from the commit's own
 # invocation, so `git -C <other> status && git commit` judges the commit, not
@@ -101,8 +131,10 @@ opts=()
 found=0
 while read -r seg; do
   read -ra tokens <<< "$seg"
-  if [ "${tokens[0]:-}" = "cd" ]; then
-    cd_target=$(unquote "${tokens[1]:-~}")
+  if changes_dir "${tokens[0]:-}"; then
+    p=1
+    names_path "${tokens[1]:-}" && p=2
+    cd_target=$(unquote "${tokens[$p]:-~}")
     continue
   fi
   is_commit_invocation "$seg" || continue
