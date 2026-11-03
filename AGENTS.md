@@ -214,3 +214,5 @@ about the harness, not about a feature.
 - Adversarial reviews and Sol review loops use `gpt-6.1-sol`.
 - Always name the model on the command (`--model`): the Codex default is `gpt-6.1-sol`, and a security scan on it does
   not count and is run again.
+- A security scan also passes `--cyber-access-program daybreak_blue` (Codex Security docs: without it a CLI scan runs
+  under the server default, not the Daybreak Blue program).
