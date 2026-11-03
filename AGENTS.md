@@ -206,3 +206,11 @@ only when the person asks. It is not a Claude Code subagent (those live in
 workflow all run today, against the placeholder, exactly as they will against
 whatever gets built here next. `npm run verify` passing on a fresh clone is a fact
 about the harness, not about a feature.
+
+## Codex reviews: which model (owner's rule, 3 November 2026)
+
+- Codex Security scans (`codex-security:security-diff-scan`, or any security review run on Codex) use `gpt-5.6-sol`.
+  The owner's Daybreak Blue program accepts scans from gpt-5.6-sol (and gpt-6-sol), never from gpt-6.1-sol.
+- Adversarial reviews and Sol review loops use `gpt-6.1-sol`.
+- Always name the model on the command (`--model`): the Codex default is `gpt-6.1-sol`, and a security scan on it does
+  not count and is run again.
